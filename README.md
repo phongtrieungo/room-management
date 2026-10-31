@@ -1,42 +1,41 @@
 # Room Management
 
-Monthly electricity/water photo extraction, comparison against previous readings, human review, and printable PDFs. Read `AGENTS.md` before implementing features or changing data. This repository is private. It contains code and synthetic demonstration records only; real tenant records and reference PDFs remain local.
+A small workflow for monthly block photos, reviewed readings, reusable HTML/CSS, and printable PDF bills. Read AGENTS.md and docs/workflow-spec.md first.
 
-## Run on GitHub
+This starter contains code and synthetic samples only. Actual records and PDF references remain local. The GitHub repository is private. Use the manual Actions workflow to run the synthetic example.
 
-Open **Actions → Monthly reading review PDF → Run workflow** and choose a month such as `2026-10`. Its CSV pair must exist. Download the review artifact from the completed run: `review.pdf`, `review.html`, and `review.json`. Artifacts expire after 30 days; download anything you need to retain.
+## Structure
 
-The workflow checks CSV structure and room coverage, compares current/previous readings, checks the previous-month handoff where available, and flags decreases and discrepancies. It never approves records, changes history, or calculates charges. Its repository permissions are read-only.
+| Path | Purpose |
+| --- | --- |
+| months/YYYY-MM/readings.csv | One approved readings snapshot per month; included examples are synthetic |
+| months/YYYY-MM/photos/ | Block photos such as A-01.jpg; excluded from Git |
+| months/YYYY-MM/runs/RUN_ID/ | Draft CSV, image evidence, checks, corrections and approval record |
+| config/YYYY-MM/ | Effective room roster and billing rules, to implement |
+| templates/ | Reusable room bill, summary and print CSS, to implement |
+| references/layout/ | Selected PDF examples for template development, supplied separately |
+| outputs/YYYY-MM/RUN_ID/ | Generated HTML and PDFs, excluded from Git |
+| scripts/, tests/, .github/workflows/ | Application code, checks and GitHub execution |
+| docs/ | Extraction, validation, approval, printing and delivery contract |
 
-The PDF is currently a **draft review table**. Photo extraction, correction/approval persistence, and the final portrait room-card/landscape billing templates are not implemented yet. Historical PDFs are layout references that must be supplied separately. Do not use reference tariffs or tenant details as current billing configuration without confirming their source.
+CSV columns: room_code,electricity,water. Store cumulative readings; load the previous month's file automatically. Do not keep a second editable previous-reading copy. See the spec before migrating legacy pairs or generating charges.
 
-## Use with Codex Cloud
+## Current capability
 
-Grant your Codex GitHub connection access to this repository and select it when creating a cloud environment/task. Start with this prompt:
+The starter reviews two monthly snapshots and creates draft comparison HTML/JSON. Its GitHub workflow can print that HTML to a draft review PDF after publication. It checks structure, numeric values, room matching and decreases. It never approves records or generates charges.
 
-> Read AGENTS.md and README.md. Implement photo intake and extraction into proposed readings with image references. Compare with the previous month's approved readings, show a review table, and preserve the human approval gate. Then implement reusable HTML/CSS print templates using the layout contract in AGENTS.md and the reference PDFs once supplied. Do not infer missing billing configuration.
+Photo extraction, persisted approval, configured anomaly thresholds, final bill templates, email delivery and a phone upload UI are not implemented. The target folders for those features are documented, not dummy working implementations. Running GitHub Actions alone does not provide a vision agent.
 
-Connecting Codex is a separate account setup step. Running GitHub Actions does not start a Codex agent or provide a vision model. The current workflow needs no AI API key. Automated photo extraction will require a configured vision service; a ChatGPT subscription alone is not an API credential. Keep credentials out of Git.
+## Local review
 
-## Local use
+Run python3 -m unittest discover -s tests -v.
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m playwright install chromium
-python -m unittest discover -s tests -v
-python scripts/review.py --month 2026-10 --output outputs
-python scripts/print_pdf.py outputs/review.html outputs/review.pdf
-```
+Run python3 scripts/review.py --month 2026-10 --output outputs/2026-10/demo.
 
-Use a fresh output directory for every new run. Existing reports are never overwritten.
+Use --current path/to/draft.csv to compare a new extracted draft instead of the target month's snapshot. The previous month's snapshot is required. Always use a fresh output directory. All review results remain pending human review.
 
-## Files
+For PDF rendering, create a Python virtual environment, install requirements.txt, run python -m playwright install chromium, then run python scripts/print_pdf.py outputs/2026-10/demo/review.html outputs/2026-10/demo/review.pdf.
 
-- Root: synthetic demo CSV pairs. Historical CSVs and `archived/` remain local. `MM-YYYY-current.csv` is current; `MM-YYYY.csv` is the previous side.
-- `t6-pdf/` through `t10-pdf/`: historical PDF layout references described in the spec, not uploaded. Provide these separately when implementing the final layout.
-- `scripts/`: CSV review and HTML-to-PDF rendering; `tests/`: data validation checks.
-- `work/`, `outputs/`, `photos/`, and `.env` are ignored by Git. A future phone photo intake must explicitly transfer images into the chosen execution environment; ignored local photos are not available to a GitHub runner.
+Actions → Monthly reading review PDF → Run workflow can review the synthetic 2026-10 example. Download outputs before the 30-day artifact expiration. Ignored local images are not available on GitHub runners; cloud intake needs an explicit authorized upload/storage mechanism.
 
-Comparing readings establishes plausibility, not transcription accuracy. Confirm digits against the original photos. A photo may contain multiple room readings; do not assume one photo equals one meter.
+Implement extraction/evidence first, validation/approval second, confirmed billing configuration and matching print templates third, then PDF verification and optional email. Secrets must stay out of Git.

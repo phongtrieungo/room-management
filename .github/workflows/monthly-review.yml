@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       month:
-        description: Month in YYYY-MM format (CSV pair must exist)
+        description: Month in YYYY-MM format (current and prior monthly snapshots must exist)
         required: true
         default: '2026-10'
 permissions:

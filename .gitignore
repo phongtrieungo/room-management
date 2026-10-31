@@ -6,3 +6,7 @@ work/
 outputs/
 photos/
 *.log
+
+months/*/photos/
+months/*/runs/
+config/delivery.local.json
