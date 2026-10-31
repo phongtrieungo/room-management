@@ -22,7 +22,9 @@ CSV columns: room_code,electricity,water. Store cumulative readings; load the pr
 
 ## Current capability
 
-The starter reviews two monthly snapshots and creates draft comparison HTML/JSON. Its GitHub workflow can print that HTML to a draft review PDF after publication. It checks structure, numeric values, room matching and decreases. It never approves records or generates charges.
+The starter reviews two monthly snapshots and creates draft comparison HTML/JSON. Its GitHub workflow prints that HTML to a draft review PDF. It checks structure, numeric values, room matching and decreases. It never approves records or generates charges.
+
+Verified on GitHub: [sample workflow run](https://github.com/phongtrieungo/room-management/actions/runs/41186015426) passed all eight tests and produced PDF, HTML and JSON artifacts. The synthetic example contains three rooms and one expected decrease. The generated PDF is one A4 landscape page, 23,044 bytes, and was visually inspected. This verifies the review/report starter, not the unimplemented photo extraction or final billing pipeline.
 
 Photo extraction, persisted approval, configured anomaly thresholds, final bill templates, email delivery and a phone upload UI are not implemented. The target folders for those features are documented, not dummy working implementations. Running GitHub Actions alone does not provide a vision agent.
 
