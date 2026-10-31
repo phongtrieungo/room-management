@@ -1,0 +1,35 @@
+name: Monthly reading review PDF
+on:
+  workflow_dispatch:
+    inputs:
+      month:
+        description: Month in YYYY-MM format (CSV pair must exist)
+        required: true
+        default: '2026-10'
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REVIEW_MONTH: ${{ inputs.month }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m unittest discover -s tests -v
+      - run: python -m pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Build review HTML and validation data
+        run: python scripts/review.py --month "$REVIEW_MONTH" --output outputs
+      - name: Print review HTML to PDF
+        run: python scripts/print_pdf.py outputs/review.html outputs/review.pdf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reading-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: outputs/
+          if-no-files-found: error
+          retention-days: 30
